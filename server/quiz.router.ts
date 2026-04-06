@@ -60,9 +60,9 @@ export const quizRouter = router({
     return quiz;
   }),
 
-  createQuiz: protectedProcedure
+  createQuiz: publicProcedure
     .input(CreateQuizSchema)
-    .mutation(async ({ input, ctx }) => {
+    .mutation(async ({ input }) => {
       const db = await import("./db").then(m => m.getDb());
       if (!db) {
         throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database unavailable" });
@@ -72,7 +72,7 @@ export const quizRouter = router({
       await db.insert(quizzes).values({
         title: input.title,
         description: input.description,
-        createdBy: ctx.user.id,
+        createdBy: 1,
       });
 
       return { ...input };
@@ -85,7 +85,7 @@ export const quizRouter = router({
       return getQuestionsByQuizId(input.quizId);
     }),
 
-  createQuestion: protectedProcedure
+  createQuestion: publicProcedure
     .input(CreateQuestionSchema)
     .mutation(async ({ input }) => {
       const db = await import("./db").then(m => m.getDb());
