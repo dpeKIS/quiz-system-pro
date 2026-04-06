@@ -11,13 +11,12 @@ export default function Home() {
         <p className="text-xl text-slate-300 mb-8">
           Complete quiz management system with real-time statistics
         </p>
-        <Button
+        <button
           onClick={() => setLocation("/admin")}
-          size="lg"
-          className="bg-blue-600 hover:bg-blue-700 text-lg px-8 py-6"
+          className="bg-blue-600 hover:bg-blue-700 text-white text-lg px-8 py-6 rounded font-semibold"
         >
           Go to Admin Panel
-        </Button>
+        </button>
       </div>
     </div>
   );
