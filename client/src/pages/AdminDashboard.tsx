@@ -99,6 +99,7 @@ export default function AdminDashboard() {
                 >
                   <CardHeader>
                     <CardTitle className="text-white">{quiz.title}</CardTitle>
+                    <CardDescription className="text-slate-400">{quiz.description}</CardDescription>
                   </CardHeader>
                 </Card>
               ))}
