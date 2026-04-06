@@ -1,4 +1,5 @@
 import { eq } from "drizzle-orm";
+import { InsertAttempt, InsertSession, attempts, questions, sessions, quizzes } from "../drizzle/schema";
 import { drizzle } from "drizzle-orm/mysql2";
 import { InsertUser, users } from "../drizzle/schema";
 import { ENV } from './_core/env';
@@ -89,4 +90,101 @@ export async function getUserByOpenId(openId: string) {
   return result.length > 0 ? result[0] : undefined;
 }
 
-// TODO: add feature queries here as your schema grows.
+// Quiz queries
+export async function getQuizzes() {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(quizzes);
+}
+
+export async function getQuizById(id: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.select().from(quizzes).where(eq(quizzes.id, id)).limit(1);
+  return result[0];
+}
+
+// Question queries
+export async function getQuestionsByQuizId(quizId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(questions).where(eq(questions.quizId, quizId));
+}
+
+export async function getQuestionByQrCode(qrCode: string) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.select().from(questions).where(eq(questions.qrCode, qrCode)).limit(1);
+  return result[0];
+}
+
+// Session queries
+export async function createSession(data: InsertSession) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.insert(sessions).values(data);
+  return result;
+}
+
+export async function getSessionByUserQrCode(userQrCode: string) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.select().from(sessions).where(eq(sessions.userQrCode, userQrCode)).limit(1);
+  return result[0];
+}
+
+export async function getSessionById(id: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.select().from(sessions).where(eq(sessions.id, id)).limit(1);
+  return result[0];
+}
+
+// Attempt queries
+export async function recordAttempt(data: InsertAttempt) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.insert(attempts).values(data);
+  return result;
+}
+
+export async function getSessionAttempts(sessionId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(attempts).where(eq(attempts.sessionId, sessionId));
+}
+
+// Statistics
+export async function getSessionStats(sessionId: number) {
+  const db = await getDb();
+  if (!db) return null;
+  const sessionAttempts = await db.select().from(attempts).where(eq(attempts.sessionId, sessionId));
+  const totalQuestions = sessionAttempts.length;
+  const correctAnswers = sessionAttempts.filter(a => a.isCorrect).length;
+  const score = totalQuestions > 0 ? Math.round((correctAnswers / totalQuestions) * 100) : 0;
+  return { totalQuestions, correctAnswers, score };
+}
+
+export async function getQuizRankings(quizId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  // Get all completed sessions for this quiz
+  const quizSessions = await db.select().from(sessions).where(eq(sessions.quizId, quizId));
+  
+  const rankings = [];
+  for (const session of quizSessions) {
+    const stats = await getSessionStats(session.id);
+    if (stats) {
+      rankings.push({
+        sessionId: session.id,
+        userName: session.userName,
+        score: stats.score,
+        correctAnswers: stats.correctAnswers,
+        totalQuestions: stats.totalQuestions,
+        completedAt: session.completedAt,
+      });
+    }
+  }
+  
+  return rankings.sort((a, b) => b.score - a.score);
+}
