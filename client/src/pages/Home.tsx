@@ -1,18 +1,23 @@
+import { Button } from "@/components/ui/button";
 import { useLocation } from "wouter";
-import { useEffect } from "react";
 
 export default function Home() {
   const [, setLocation] = useLocation();
 
-  // Redirect directly to admin for testing
-  useEffect(() => {
-    setLocation("/admin");
-  }, [setLocation]);
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
-      <div className="text-center">
-        <p className="text-white text-xl">Redirecting to Admin Panel...</p>
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-8">
+      <div className="max-w-4xl mx-auto text-center">
+        <h1 className="text-5xl font-bold text-white mb-4">Quiz System Pro</h1>
+        <p className="text-xl text-slate-300 mb-8">
+          Complete quiz management system with real-time statistics
+        </p>
+        <Button
+          onClick={() => setLocation("/admin")}
+          size="lg"
+          className="bg-blue-600 hover:bg-blue-700 text-lg px-8 py-6"
+        >
+          Go to Admin Panel
+        </Button>
       </div>
     </div>
   );
